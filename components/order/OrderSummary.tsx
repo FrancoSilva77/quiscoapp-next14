@@ -1,7 +1,8 @@
 'use client';
+import { useMemo } from 'react';
+import { toast } from 'react-toastify';
 import { useStore } from '@/src/store';
 import ProductDetails from './ProductDetails';
-import { useMemo } from 'react';
 import { formatCurrency } from '@/src/utils';
 import { createOrder } from '@/actions/create-order-action';
 import { OrderSchema } from '@/src/schema';
@@ -13,16 +14,30 @@ export default function OrderSummary() {
     [order]
   );
 
-  const handleCreateOrder = (formData: FormData) => {
+  const handleCreateOrder = async (formData: FormData) => {
     const data = {
-      name: formData.get('name')
-    }
+      name: formData.get('name'),
+      total,
+      order
+    };
 
-    const result = OrderSchema.safeParse(data)
+    const result = OrderSchema.safeParse(data);
     console.log(result);
     
-    return
-    createOrder();
+    if (!result.success) {
+      result.error.issues.forEach((issue) => {
+        toast.error(issue.message)
+      });
+      return
+    }
+
+    const response = await createOrder(data);
+    if(response?.errors) {
+      response.errors.forEach((issue) => {
+        toast.error(issue.message)
+      })
+    }
+    
   };
   return (
     <aside className="lg:h-screen lg:overflow-y-scroll md:w-64 lg:w-96 p-5">
@@ -49,7 +64,7 @@ export default function OrderSummary() {
             <input
               type="text"
               placeholder="Tu nombre"
-              name='name'
+              name="name"
               className="bg-white border border-gray-100 p-2 w-full"
             />
 
