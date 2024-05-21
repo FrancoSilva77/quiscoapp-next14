@@ -1,8 +1,14 @@
+import { redirect } from 'next/navigation';
+import ProductsNavigation from '@/components/products/ProductsNavigation';
 import ProductTable from '@/components/products/ProductTable';
 import Heading from '@/components/ui/Heading';
 import { prisma } from '@/src/lib/prisma';
 
-async function getProducts(page: number, pageSize: number, skip: number) {
+async function productCount() {
+  return await prisma.product.count();
+}
+
+async function getProducts(pageSize: number, skip: number) {
   const products = await prisma.product.findMany({
     take: pageSize,
     skip,
@@ -24,13 +30,29 @@ export default async function ProductsPage({
   const pageSize = 10;
   const skip = (page - 1) * pageSize;
 
-  const products = await getProducts(page, pageSize, skip);
+  if (page < 0) redirect('/admin/products');
+
+  const productsData = getProducts(pageSize, skip);
+  const totalProductsData = productCount();
+  const [products, totalProducts] = await Promise.all([
+    productsData,
+    totalProductsData,
+  ]);
+
+  const totalPages = Math.ceil(totalProducts / pageSize);
+
+  if (page > totalPages) redirect('/admin/products');
 
   return (
     <>
       <Heading>Administrar Productos</Heading>
 
       <ProductTable products={products} />
+
+      <ProductsNavigation
+        page={page}
+        totalPages={totalPages}
+      />
     </>
   );
 }
