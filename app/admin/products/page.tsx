@@ -1,9 +1,20 @@
-import Heading from "@/components/ui/Heading";
+import ProductTable from '@/components/products/ProductTable';
+import Heading from '@/components/ui/Heading';
+import { prisma } from '@/src/lib/prisma';
 
-export default function ProductsPage() {
+async function getProducts() {
+  const products = await prisma.product.findMany();
+  return products;
+}
+
+export default async function ProductsPage() {
+  const products = await getProducts();
+
   return (
     <>
-    <Heading>Administrar Productos</Heading>
+      <Heading>Administrar Productos</Heading>
+
+      <ProductTable products={products}/>
     </>
   );
 }
