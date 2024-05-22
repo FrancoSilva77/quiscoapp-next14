@@ -7,8 +7,6 @@ type OrderCardProps = {
 };
 
 export default function OrderCard({ order }: OrderCardProps) {
-
-  console.log('servidor');
   
   return (
     <section
