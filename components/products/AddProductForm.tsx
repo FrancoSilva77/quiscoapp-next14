@@ -1,12 +1,27 @@
 'use client';
 
+import { ProductSchema } from '@/src/schema';
+import { toast } from 'react-toastify';
+
 export default function AddProductForm({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const handleSubmit = async (formData: FormData) => {
-    console.log('Desde handleSubmit');
+    const data = {
+      name: formData.get('name'),
+      price: formData.get('price'),
+      categoryId: formData.get('categoryId'),
+    };
+
+    const result = ProductSchema.safeParse(data);
+    if (!result.success) {
+      result.error.issues.forEach((issue) => {
+        toast.error(issue.message);
+      });
+      return;
+    }
   };
 
   return (
